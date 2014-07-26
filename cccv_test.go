@@ -139,6 +139,31 @@ func TestDoesNotCountChangesThemselvesAsDuplicates(t *testing.T) {
 	Expect(result).To(Equal(expectedResult))
 }
 
+func TestIncludesChangeOnlyOnce(t *testing.T) {
+	RegisterTestingT(t)
+
+	WriteFile("/tmp/some_file.go", func(f *os.File) {
+		f.WriteString("writes\n")
+		f.WriteString("type FileName string\n")
+		f.WriteString("writes\n")
+		f.WriteString("type FileName string\n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	expectedChanges := expectedChanges
+	expectedChanges = append(expectedChanges, &Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 28, Text: "type FileName string"}})
+
+	expectedResult := FileResult{
+		FileName: FileName("/tmp/some_file.go"),
+		Lines: []*Line{
+			&Line{Number: 2, Text: "type FileName string"},
+			&Line{Number: 4, Text: "type FileName string"},
+		},
+	}
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	Expect(result).To(Equal(expectedResult))
+}
+
 func WriteFile(fname string, callback func(f *os.File)) {
 	f, err := os.Create(fname)
 	if err != nil {

@@ -77,7 +77,16 @@ func GenResultForFile(fName string, changes *[]*Change) FileResult {
 					continue
 				}
 
-				result.Lines = append(result.Lines, &Line{Number: currentLineNumber, Text: line})
+				resultAlreadyRecorded := false
+				for _, resultLine := range result.Lines {
+					if resultLine.Number == currentLineNumber && resultLine.Text == line {
+						resultAlreadyRecorded = true
+					}
+				}
+
+				if !resultAlreadyRecorded {
+					result.Lines = append(result.Lines, &Line{Number: currentLineNumber, Text: line})
+				}
 			}
 		}
 	}
