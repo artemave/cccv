@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	. "github.com/onsi/gomega"
@@ -52,10 +53,16 @@ var expectedChanges = []*Change{
 	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 48, Text: "\to.O(results)"}},
 }
 
+var config = Config{
+	ExcludeLines:  []*regexp.Regexp{},
+	ExcludeFiles:  []*regexp.Regexp{},
+	MinLineLength: 10,
+}
+
 func TestParsesDiff(t *testing.T) {
 	RegisterTestingT(t)
 
-	changes := getChanges(strings.NewReader(diff))
+	changes := getChanges(strings.NewReader(diff), config)
 	Expect(*changes).To(Equal(expectedChanges))
 }
 
@@ -77,7 +84,7 @@ func TestFindsDuplicates(t *testing.T) {
 			&Line{Number: 4, Text: "type FileName string"},
 		},
 	}
-	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
 	Expect(result).To(Equal(expectedResult))
 }
 
@@ -97,7 +104,7 @@ func TestIgnoresLinesShorterThan10c(t *testing.T) {
 		FileName: FileName("/tmp/some_file.go"),
 		Lines:    []*Line{},
 	}
-	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
 	Expect(result).To(Equal(expectedResult))
 }
 
@@ -116,7 +123,7 @@ func TestConsidersIndentedButOtherwiseIdenticalLinesAsDuplicates(t *testing.T) {
 			&Line{Number: 2, Text: "\t o.O(results) "},
 		},
 	}
-	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
 	Expect(result).To(Equal(expectedResult))
 }
 
@@ -135,7 +142,7 @@ func TestDoesNotCountChangesThemselvesAsDuplicates(t *testing.T) {
 		FileName: FileName("tmp_cccv.go"),
 		Lines:    []*Line{},
 	}
-	result := GenResultForFile("tmp_cccv.go", &expectedChanges)
+	result := GenResultForFile("tmp_cccv.go", &expectedChanges, config)
 	Expect(result).To(Equal(expectedResult))
 }
 
@@ -160,7 +167,7 @@ func TestIncludesChangeOnlyOnce(t *testing.T) {
 			&Line{Number: 4, Text: "type FileName string"},
 		},
 	}
-	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
 	Expect(result).To(Equal(expectedResult))
 }
 

@@ -1,0 +1,8 @@
+exclude-lines:
+  - "fmt|if err != nil"
+  - WriteString
+
+exclude-files:
+  - "README.*"
+
+min-line-length: 15
