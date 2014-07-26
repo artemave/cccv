@@ -31,6 +31,10 @@ type FileResult struct {
 	Lines []*Line
 }
 
+func (fr *FileResult) HasDuplicates() bool {
+	return len(fr.Lines) > 0
+}
+
 func main() {
 	results := []FileResult{}
 
@@ -42,7 +46,17 @@ func main() {
 		results = append(results, r)
 	}
 
-	o.O(results)
+	thereAreDuplicates := false
+	for _, r := range results {
+		if r.HasDuplicates() {
+			thereAreDuplicates = true
+		}
+	}
+
+	if thereAreDuplicates {
+		o.O(results)
+		os.Exit(1)
+	}
 }
 
 func GenResultForFile(fName string, changes *[]*Change) FileResult {
