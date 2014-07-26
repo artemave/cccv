@@ -7,4 +7,5 @@ Check if git diff (commit, pr) contains copy pasted code.
 
 ```
 % go get github.com/artemave/cccv
-% git diff | cccv
+% git checkout pr1
+% git diff master | cccv
