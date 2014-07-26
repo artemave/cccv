@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AndrewVos/o"
+	"github.com/kr/pretty"
 )
 
 type FileName string
@@ -54,7 +54,7 @@ func main() {
 	}
 
 	if thereAreDuplicates {
-		o.O(results)
+		pretty.Print(results)
 		os.Exit(1)
 	}
 }
@@ -63,18 +63,18 @@ func GenResultForFile(fName string, changes *[]*Change) FileResult {
 	file, _ := os.Open(fName)
 	scanner := bufio.NewScanner(file)
 	currentLineNumber := 0
+	trimF := func(c rune) bool { return (c == 32 || c == 9) }
 	result := FileResult{FileName: FileName(fName), Lines: []*Line{}}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		trimmedLine := strings.TrimSpace(line)
 		currentLineNumber++
 
-		for _, changedLine := range *changes {
-			if changedLine.Text == trimmedLine {
+		for _, change := range *changes {
+			if strings.TrimFunc(change.Text, trimF) == strings.TrimFunc(line, trimF) {
 
 				// exclude lines from the diff itself
-				if string(changedLine.FileName) == fName && changedLine.Line.Number == currentLineNumber {
+				if string(change.FileName) == fName && change.Line.Number == currentLineNumber {
 					continue
 				}
 
@@ -115,6 +115,7 @@ func getChanges(reader io.Reader) *[]*Change {
 
 	currentFileR := regexp.MustCompile(`^\+\+\+ ./(.*)$`)
 	lineAddedR := regexp.MustCompile(`^\+{1}(.*\w+.*)`)
+	lineRemovedR := regexp.MustCompile(`^\-{1}`)
 	lineRangeR := regexp.MustCompile(`^@@.*?\+(\d+?),`)
 
 	for scanner.Scan() {
@@ -131,16 +132,16 @@ func getChanges(reader io.Reader) *[]*Change {
 			}
 			currentLineNumber = r
 
-		} else if lineAddedR.MatchString(currentLine) == true {
+		} else if lineAddedR.MatchString(currentLine) {
 			res := lineAddedR.FindStringSubmatch(currentLine)
 			newChange := &Change{
 				FileName: FileName(currentFile),
-				Line:     Line{Text: strings.TrimSpace(res[1]), Number: currentLineNumber},
+				Line:     Line{Text: res[1], Number: currentLineNumber},
 			}
 			*changes = append(*changes, newChange)
 			currentLineNumber++
 
-		} else {
+		} else if !lineRemovedR.MatchString(currentLine) {
 			currentLineNumber++
 		}
 	}

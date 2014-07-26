@@ -17,12 +17,13 @@ index c9caa23..8ad488f 100644
 
 '''
  % go get github.com/artemave/cccv
+-nonsense
 +% go get github.com/artemave/cccv
  % git diff | cccv
-diff --git a/cccv.go b/cccv.go
+diff --git a/tmp_cccv.go b/tmp_cccv.go
 index af3d9dc..0e96324 100644
---- a/cccv.go
-+++ b/cccv.go
+--- a/tmp_cccv.go
++++ b/tmp_cccv.go
 @@ -15,9 +15,11 @@ import (
  )
  
@@ -47,9 +48,9 @@ index af3d9dc..0e96324 100644
 
 var expectedChanges = []*Change{
 	&Change{FileName: FileName("README.md"), Line: Line{Number: 10, Text: "% go get github.com/artemave/cccv"}},
-	&Change{FileName: FileName("cccv.go"), Line: Line{Number: 18, Text: "type FileName string"}},
-	&Change{FileName: FileName("cccv.go"), Line: Line{Number: 22, Text: "FileName"}},
-	&Change{FileName: FileName("cccv.go"), Line: Line{Number: 48, Text: "o.O(results)"}},
+	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 18, Text: "type FileName string"}},
+	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 22, Text: "\tFileName"}},
+	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 48, Text: "\to.O(results)"}},
 }
 
 func TestParsesDiff(t *testing.T) {
@@ -69,6 +70,7 @@ func TestFindsDuplicates(t *testing.T) {
 		f.WriteString("type FileName string\n")
 		f.WriteString("writes\n")
 	})
+	defer os.Remove("tmp_cccv.go")
 
 	expectedResult := FileResult{
 		FileName: FileName("/tmp/some_file.go"),
@@ -78,6 +80,25 @@ func TestFindsDuplicates(t *testing.T) {
 		},
 	}
 	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	Expect(result).To(Equal(expectedResult))
+}
+
+func TestDoesNotCountChangesThemselvesAsDuplicates(t *testing.T) {
+	RegisterTestingT(t)
+
+	WriteFile("tmp_cccv.go", func(f *os.File) {
+		for i := 0; i < 17; i++ {
+			f.WriteString("writes\n")
+		}
+		f.WriteString("type FileName string\n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	expectedResult := FileResult{
+		FileName: FileName("tmp_cccv.go"),
+		Lines:    []*Line{},
+	}
+	result := GenResultForFile("tmp_cccv.go", &expectedChanges)
 	Expect(result).To(Equal(expectedResult))
 }
 
