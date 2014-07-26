@@ -63,7 +63,6 @@ func GenResultForFile(fName string, changes *[]*Change) FileResult {
 	file, _ := os.Open(fName)
 	scanner := bufio.NewScanner(file)
 	currentLineNumber := 0
-	trimF := func(c rune) bool { return (c == 32 || c == 9) }
 	result := FileResult{FileName: FileName(fName), Lines: []*Line{}}
 
 	for scanner.Scan() {
@@ -71,7 +70,7 @@ func GenResultForFile(fName string, changes *[]*Change) FileResult {
 		currentLineNumber++
 
 		for _, change := range *changes {
-			if strings.TrimFunc(change.Text, trimF) == strings.TrimFunc(line, trimF) {
+			if strings.TrimFunc(change.Text, TrimF) == strings.TrimFunc(line, TrimF) {
 
 				// exclude lines from the diff itself
 				if string(change.FileName) == fName && change.Line.Number == currentLineNumber {
@@ -134,6 +133,12 @@ func getChanges(reader io.Reader) *[]*Change {
 
 		} else if lineAddedR.MatchString(currentLine) {
 			res := lineAddedR.FindStringSubmatch(currentLine)
+
+			if len(strings.TrimFunc(res[1], TrimF)) <= 10 {
+				currentLineNumber++
+				continue
+			}
+
 			newChange := &Change{
 				FileName: FileName(currentFile),
 				Line:     Line{Text: res[1], Number: currentLineNumber},
@@ -153,3 +158,5 @@ func getChanges(reader io.Reader) *[]*Change {
 
 	return changes
 }
+
+func TrimF(c rune) bool { return (c == 32 || c == 9) }

@@ -49,7 +49,6 @@ index af3d9dc..0e96324 100644
 var expectedChanges = []*Change{
 	&Change{FileName: FileName("README.md"), Line: Line{Number: 10, Text: "% go get github.com/artemave/cccv"}},
 	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 18, Text: "type FileName string"}},
-	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 22, Text: "\tFileName"}},
 	&Change{FileName: FileName("tmp_cccv.go"), Line: Line{Number: 48, Text: "\to.O(results)"}},
 }
 
@@ -65,7 +64,7 @@ func TestFindsDuplicates(t *testing.T) {
 
 	WriteFile("/tmp/some_file.go", func(f *os.File) {
 		f.WriteString("writes\n")
-		f.WriteString("o.O(results)\n")
+		f.WriteString("writes\n")
 		f.WriteString("writes\n")
 		f.WriteString("type FileName string\n")
 		f.WriteString("writes\n")
@@ -75,9 +74,28 @@ func TestFindsDuplicates(t *testing.T) {
 	expectedResult := FileResult{
 		FileName: FileName("/tmp/some_file.go"),
 		Lines: []*Line{
-			&Line{Number: 2, Text: "o.O(results)"},
 			&Line{Number: 4, Text: "type FileName string"},
 		},
+	}
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	Expect(result).To(Equal(expectedResult))
+}
+
+func TestIgnoresLinesShorterThan10c(t *testing.T) {
+	RegisterTestingT(t)
+
+	WriteFile("/tmp/some_file.go", func(f *os.File) {
+		f.WriteString("writes\n")
+		f.WriteString("writes\n")
+		f.WriteString("writes\n")
+		f.WriteString("FileName\n")
+		f.WriteString("writes\n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	expectedResult := FileResult{
+		FileName: FileName("/tmp/some_file.go"),
+		Lines:    []*Line{},
 	}
 	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
 	Expect(result).To(Equal(expectedResult))
