@@ -83,6 +83,25 @@ func TestFindsDuplicates(t *testing.T) {
 	Expect(result).To(Equal(expectedResult))
 }
 
+func TestConsidersIndentedButOtherwiseIdenticalLinesAsDuplicates(t *testing.T) {
+	RegisterTestingT(t)
+
+	WriteFile("/tmp/some_file.go", func(f *os.File) {
+		f.WriteString("writes\n")
+		f.WriteString("\t o.O(results) \n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	expectedResult := FileResult{
+		FileName: FileName("/tmp/some_file.go"),
+		Lines: []*Line{
+			&Line{Number: 2, Text: "\t o.O(results) "},
+		},
+	}
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges)
+	Expect(result).To(Equal(expectedResult))
+}
+
 func TestDoesNotCountChangesThemselvesAsDuplicates(t *testing.T) {
 	RegisterTestingT(t)
 
