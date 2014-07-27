@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/kr/pretty"
 	"gopkg.in/yaml.v1"
@@ -81,17 +82,31 @@ func (fr *FileResult) HasDuplicates() bool {
 }
 
 func main() {
+	var wg sync.WaitGroup
 	config := LoadConfig()
 
+	resultChan := make(chan FileResult)
 	results := []FileResult{}
 
 	changes := getChanges(os.Stdin, config)
 	gitFiles := gitLsFiles(config)
 
+	go func() {
+		for {
+			r := <-resultChan
+			results = append(results, r)
+		}
+	}()
+
 	for _, fName := range gitFiles {
-		r := GenResultForFile(fName, changes, config)
-		results = append(results, r)
+		wg.Add(1)
+		go func(fName string, resultChan chan FileResult) {
+			defer wg.Done()
+			r := GenResultForFile(fName, changes, config)
+			resultChan <- r
+		}(fName, resultChan)
 	}
+	wg.Wait()
 
 	thereAreDuplicates := false
 	for _, r := range results {
