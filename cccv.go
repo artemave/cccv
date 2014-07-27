@@ -103,19 +103,14 @@ func main() {
 		go func(fName string, resultChan chan FileResult) {
 			defer wg.Done()
 			r := GenResultForFile(fName, changes, config)
-			resultChan <- r
+			if r.HasDuplicates() {
+				resultChan <- r
+			}
 		}(fName, resultChan)
 	}
 	wg.Wait()
 
-	thereAreDuplicates := false
-	for _, r := range results {
-		if r.HasDuplicates() {
-			thereAreDuplicates = true
-		}
-	}
-
-	if thereAreDuplicates {
+	if len(results) > 0 {
 		pretty.Print(results)
 		os.Exit(1)
 	}
