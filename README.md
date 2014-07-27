@@ -21,3 +21,8 @@ exclude-files:
   - "README.*" # this is regexp, NOT a glob
 
 min-line-length: 15 # defaults to 10
+```
+
+## Limitations
+
+Relies on _standard_ git diff format.

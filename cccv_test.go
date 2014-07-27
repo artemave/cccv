@@ -171,6 +171,28 @@ func TestIncludesChangeOnlyOnce(t *testing.T) {
 	Expect(result).To(Equal(expectedResult))
 }
 
+func TestExcludesLinesYaml(t *testing.T) {
+	RegisterTestingT(t)
+
+	config := config
+	config.ExcludeLines = []*regexp.Regexp{regexp.MustCompile("github")}
+
+	WriteFile("/tmp/some_file.go", func(f *os.File) {
+		f.WriteString("% go get github.com/artemave/cccv\n")
+		f.WriteString("type FileName string\n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	expectedResult := FileResult{
+		FileName: FileName("/tmp/some_file.go"),
+		Lines: []*Line{
+			&Line{Number: 2, Text: "type FileName string"},
+		},
+	}
+	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
+	Expect(result).To(Equal(expectedResult))
+}
+
 func WriteFile(fname string, callback func(f *os.File)) {
 	f, err := os.Create(fname)
 	if err != nil {
