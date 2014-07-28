@@ -7,4 +7,4 @@ exclude-files:
 
 min-line-length: 15
 
-ignore-hunks-of-less-than: 2
+min-hunk-size: 2

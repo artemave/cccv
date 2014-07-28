@@ -54,10 +54,10 @@ var expectedChanges = []*Change{
 }
 
 var config = Config{
-	ExcludeLines:               []*regexp.Regexp{},
-	ExcludeFiles:               []*regexp.Regexp{},
-	MinLineLength:              10,
-	IgnoreHunksOfLinesLessThan: 1,
+	ExcludeLines:  []*regexp.Regexp{},
+	ExcludeFiles:  []*regexp.Regexp{},
+	MinLineLength: 10,
+	MinHunkSize:   1,
 }
 
 func TestParsesDiff(t *testing.T) {
@@ -198,7 +198,7 @@ func TestIgnoresDuplicatesOfLessThanNLinesLong(t *testing.T) {
 	RegisterTestingT(t)
 
 	config := config
-	config.IgnoreHunksOfLinesLessThan = 2
+	config.MinHunkSize = 2
 
 	WriteFile("/tmp/some_file.go", func(f *os.File) {
 		f.WriteString("line 1\n")

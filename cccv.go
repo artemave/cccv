@@ -18,18 +18,18 @@ import (
 )
 
 type Config struct {
-	ExcludeLines               []*regexp.Regexp
-	ExcludeFiles               []*regexp.Regexp
-	MinLineLength              int
-	IgnoreHunksOfLinesLessThan int
+	ExcludeLines  []*regexp.Regexp
+	ExcludeFiles  []*regexp.Regexp
+	MinLineLength int
+	MinHunkSize   int
 }
 
 func LoadConfig() Config {
 	config := Config{
-		ExcludeLines:               []*regexp.Regexp{},
-		ExcludeFiles:               []*regexp.Regexp{},
-		MinLineLength:              10,
-		IgnoreHunksOfLinesLessThan: 2,
+		ExcludeLines:  []*regexp.Regexp{},
+		ExcludeFiles:  []*regexp.Regexp{},
+		MinLineLength: 10,
+		MinHunkSize:   2,
 	}
 
 	data, err := ioutil.ReadFile(".cccv.yml")
@@ -38,10 +38,10 @@ func LoadConfig() Config {
 	}
 
 	t := struct {
-		ExcludeFiles               []string "exclude-files"
-		ExcludeLines               []string "exclude-lines"
-		MinLineLength              int      "min-line-length"
-		IgnoreHunksOfLinesLessThan int      "ignore-hunks-of-less-than"
+		ExcludeFiles  []string "exclude-files"
+		ExcludeLines  []string "exclude-lines"
+		MinLineLength int      "min-line-length"
+		MinHunkSize   int      "min-hunk-size"
 	}{}
 	err = yaml.Unmarshal(data, &t)
 	if err != nil {
@@ -165,42 +165,44 @@ LOOP_LINES:
 		}
 	}
 
+	result.Lines = filteredByHunkSizeLines(result.Lines, config)
+	return result
+}
+
+func filteredByHunkSizeLines(lines []*Line, config Config) []*Line {
 	var currentHunk []*Line
 	hunks := [][]*Line{}
 
-	for i, l := range result.Lines {
+	for i, l := range lines {
 		if i == 0 {
 			currentHunk = []*Line{l}
 
-			if len(result.Lines) == 1 {
+			if len(lines) == 1 {
 				hunks = append(hunks, currentHunk)
 			}
 			continue
 		}
 
-		if l.Number-1 == result.Lines[i-1].Number {
+		if l.Number-1 == lines[i-1].Number {
 			currentHunk = append(currentHunk, l)
 		} else {
 			hunks = append(hunks, currentHunk)
 
-			if i == len(result.Lines)-1 {
+			if i == len(lines)-1 {
 				hunks = append(hunks, []*Line{l})
 			} else {
 				currentHunk = []*Line{l}
 			}
 		}
-
 	}
 
 	filteredLines := []*Line{}
 	for _, h := range hunks {
-		if len(h) >= config.IgnoreHunksOfLinesLessThan {
+		if len(h) >= config.MinHunkSize {
 			filteredLines = append(filteredLines, h...)
 		}
 	}
-
-	result.Lines = filteredLines
-	return result
+	return filteredLines
 }
 
 func gitLsFiles(config Config) []string {

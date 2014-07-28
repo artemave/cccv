@@ -20,7 +20,7 @@ exclude-lines:
 exclude-files:
   - "README.*" # this is regexp, NOT a glob
 
-ignore-hunks-of-less-than: 3 # defaults to 2
+min-hunk-size: 3 # lines; defaults to 2
 
 min-line-length: 15 # defaults to 10
 ```
