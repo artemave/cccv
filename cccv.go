@@ -18,16 +18,18 @@ import (
 )
 
 type Config struct {
-	ExcludeLines  []*regexp.Regexp
-	ExcludeFiles  []*regexp.Regexp
-	MinLineLength int
+	ExcludeLines               []*regexp.Regexp
+	ExcludeFiles               []*regexp.Regexp
+	MinLineLength              int
+	IgnoreHunksOfLinesLessThan int
 }
 
 func LoadConfig() Config {
 	config := Config{
-		ExcludeLines:  []*regexp.Regexp{},
-		ExcludeFiles:  []*regexp.Regexp{},
-		MinLineLength: 10,
+		ExcludeLines:               []*regexp.Regexp{},
+		ExcludeFiles:               []*regexp.Regexp{},
+		MinLineLength:              10,
+		IgnoreHunksOfLinesLessThan: 2,
 	}
 
 	data, err := ioutil.ReadFile(".cccv.yml")
@@ -36,9 +38,10 @@ func LoadConfig() Config {
 	}
 
 	t := struct {
-		ExcludeFiles  []string "exclude-files"
-		ExcludeLines  []string "exclude-lines"
-		MinLineLength int      "min-line-length"
+		ExcludeFiles               []string "exclude-files"
+		ExcludeLines               []string "exclude-lines"
+		MinLineLength              int      "min-line-length"
+		IgnoreHunksOfLinesLessThan int      "ignore-hunks-of-less-than"
 	}{}
 	err = yaml.Unmarshal(data, &t)
 	if err != nil {
@@ -161,6 +164,42 @@ LOOP_LINES:
 			}
 		}
 	}
+
+	var currentHunk []*Line
+	hunks := [][]*Line{}
+
+	for i, l := range result.Lines {
+		if i == 0 {
+			currentHunk = []*Line{l}
+
+			if len(result.Lines) == 1 {
+				hunks = append(hunks, currentHunk)
+			}
+			continue
+		}
+
+		if l.Number-1 == result.Lines[i-1].Number {
+			currentHunk = append(currentHunk, l)
+		} else {
+			hunks = append(hunks, currentHunk)
+
+			if i == len(result.Lines)-1 {
+				hunks = append(hunks, []*Line{l})
+			} else {
+				currentHunk = []*Line{l}
+			}
+		}
+
+	}
+
+	filteredLines := []*Line{}
+	for _, h := range hunks {
+		if len(h) >= config.IgnoreHunksOfLinesLessThan {
+			filteredLines = append(filteredLines, h...)
+		}
+	}
+
+	result.Lines = filteredLines
 	return result
 }
 

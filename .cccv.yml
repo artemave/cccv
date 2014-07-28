@@ -6,3 +6,5 @@ exclude-files:
   - "README.*"
 
 min-line-length: 15
+
+ignore-hunks-of-less-than: 2

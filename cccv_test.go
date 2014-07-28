@@ -54,9 +54,10 @@ var expectedChanges = []*Change{
 }
 
 var config = Config{
-	ExcludeLines:  []*regexp.Regexp{},
-	ExcludeFiles:  []*regexp.Regexp{},
-	MinLineLength: 10,
+	ExcludeLines:               []*regexp.Regexp{},
+	ExcludeFiles:               []*regexp.Regexp{},
+	MinLineLength:              10,
+	IgnoreHunksOfLinesLessThan: 1,
 }
 
 func TestParsesDiff(t *testing.T) {
@@ -190,6 +191,42 @@ func TestExcludesLinesYaml(t *testing.T) {
 		},
 	}
 	result := GenResultForFile("/tmp/some_file.go", &expectedChanges, config)
+	Expect(result).To(Equal(expectedResult))
+}
+
+func TestIgnoresDuplicatesOfLessThanNLinesLong(t *testing.T) {
+	RegisterTestingT(t)
+
+	config := config
+	config.IgnoreHunksOfLinesLessThan = 2
+
+	WriteFile("/tmp/some_file.go", func(f *os.File) {
+		f.WriteString("line 1\n")
+		f.WriteString("added line 2\n")
+		f.WriteString("added line 3\n")
+		f.WriteString("line 4\n")
+		f.WriteString("added line 5\n")
+		f.WriteString("added line 6\n")
+		f.WriteString("line 7\n")
+	})
+	defer os.Remove("tmp_cccv.go")
+
+	changes := []*Change{
+		&Change{FileName: FileName("README"), Line: Line{Number: 10, Text: "added line 2"}},
+		&Change{FileName: FileName("README"), Line: Line{Number: 11, Text: "added line 3"}},
+		&Change{FileName: FileName("README"), Line: Line{Number: 21, Text: "added line 5"}},
+		&Change{FileName: FileName("README"), Line: Line{Number: 31, Text: "added line 6"}},
+	}
+
+	expectedResult := FileResult{
+		FileName: FileName("/tmp/some_file.go"),
+		Lines: []*Line{
+			&Line{Number: 2, Text: "added line 2"},
+			&Line{Number: 3, Text: "added line 3"},
+		},
+	}
+
+	result := GenResultForFile("/tmp/some_file.go", &changes, config)
 	Expect(result).To(Equal(expectedResult))
 }
 
