@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kr/pretty"
+	"github.com/AndrewVos/colour"
 	"gopkg.in/yaml.v1"
 )
 
@@ -111,8 +111,15 @@ func main() {
 	wg.Wait()
 
 	if len(results) > 0 {
-		pretty.Print(results)
+		for _, r := range results {
+			fmt.Printf(colour.Red("%s:\n"), r.FileName)
+			for _, l := range r.Lines {
+				fmt.Printf(colour.Yellow("%d: ")+"%s\n", l.Number, l.Text)
+			}
+		}
 		os.Exit(1)
+	} else {
+		fmt.Printf(colour.Green("Good diff - no copypasted code.\n"))
 	}
 }
 
