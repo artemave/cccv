@@ -7,6 +7,8 @@ Why? Copy/pasted code is impossible to spot at code review time (unless the revi
 
 ## Usage
 
+[Golang](http://golang.org/doc/install) is required to install the package.
+
 ```
 % go get github.com/artemave/cccv
 % git checkout pr1
