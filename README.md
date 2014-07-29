@@ -22,10 +22,11 @@ exclude-lines:
 exclude-files:
   - "README.*" # this is regexp, NOT a glob
 
-# mininum number of consequtive duplicate lines to consider relevant; defaults to 2
+# mininum number of consequtive duplicate lines to consider relevant; default 2
 min-hunk-size: 3
 
-min-line-length: 15 # defaults to 10
+# minimum line length (bar leading/trailing tabs and spaces) to be considered relevant; default 10
+min-line-length: 15
 ```
 
 ## Limitations
