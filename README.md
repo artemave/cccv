@@ -22,11 +22,12 @@ exclude-lines:
 exclude-files:
   - "README.*" # this is regexp, NOT a glob
 
-min-hunk-size: 3 # lines; defaults to 2
+# mininum number of consequtive duplicate lines to consider relevant; defaults to 2
+min-hunk-size: 3
 
 min-line-length: 15 # defaults to 10
 ```
 
 ## Limitations
 
-Relies on _standard_ git diff format.
+Relies on _default_ git diff output format.
