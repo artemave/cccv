@@ -185,14 +185,14 @@ func filteredByHunkSizeLines(lines []*Line, config Config) []*Line {
 
 		if l.Number-1 == lines[i-1].Number {
 			currentHunk = append(currentHunk, l)
+
 		} else {
 			hunks = append(hunks, currentHunk)
+			currentHunk = []*Line{l}
+		}
 
-			if i == len(lines)-1 {
-				hunks = append(hunks, []*Line{l})
-			} else {
-				currentHunk = []*Line{l}
-			}
+		if i == len(lines)-1 {
+			hunks = append(hunks, currentHunk)
 		}
 	}
 
