@@ -1,13 +1,13 @@
 cccv
 ====
 
-cccv finds what changes in a diff were copy/pasted from elsewhere in the project.
+cccv finds what parts of a diff were copy/pasted from elsewhere in the project.
 
-Why? Copy/pasted code is impossible to spot at code review time (unless the reviewer knows thy code very well). At the same time, it is such an obvious offence that it is more often than not caused by haste and forgetfulness rather than an evil intent (or so I'd like to believe). If caught early, it is unlikely spark an argument and has higher chances to get fixed. Ergo, worth pointing out.
+Why? Because copy/pasted code is impossible to spot at code review time.
 
 ## Usage
 
-[Golang](http://golang.org/doc/install) is required to install the package.
+[Golang](http://golang.org/doc/install) is required to install this package.
 
 ```
 % go get github.com/artemave/cccv
