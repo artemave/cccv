@@ -15,7 +15,7 @@ Why? Because copy/pasted code is impossible to spot at code review time.
 % git diff master | cccv
 ```
 
-For fine tuning, drop `.cccv.yml` in the root of your project. Example:
+For fine tuning, drop `.cccv.yml` into the root of your project. Example:
 ```
 exclude-lines:
   - "fmt|if err != nil"
