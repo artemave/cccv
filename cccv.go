@@ -114,6 +114,7 @@ func main() {
 	wg.Wait()
 
 	if len(results) > 0 {
+		fmt.Printf(colour.White("Possible copy/paste sources:\n"))
 		for _, r := range results {
 			fmt.Printf(colour.Red("%s:\n"), r.FileName)
 			for _, l := range r.Lines {
@@ -122,7 +123,7 @@ func main() {
 		}
 		os.Exit(1)
 	} else {
-		fmt.Printf(colour.Green("Good diff - no copypasted code.\n"))
+		fmt.Printf(colour.Green("Good diff - no copy/pasted code.\n"))
 	}
 }
 
