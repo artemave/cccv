@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/AndrewVos/colour"
 	"gopkg.in/yaml.v1"
@@ -85,33 +84,19 @@ func (fr *FileResult) HasDuplicates() bool {
 }
 
 func main() {
-	var wg sync.WaitGroup
 	config := LoadConfig()
 
-	resultChan := make(chan FileResult)
 	results := []FileResult{}
 
 	changes := getChanges(os.Stdin, config)
 	gitFiles := gitLsFiles(config)
 
-	go func() {
-		for {
-			r := <-resultChan
+	for _, fName := range gitFiles {
+		r := GenResultForFile(fName, changes, config)
+		if r.HasDuplicates() {
 			results = append(results, r)
 		}
-	}()
-
-	for _, fName := range gitFiles {
-		wg.Add(1)
-		go func(fName string, resultChan chan FileResult) {
-			defer wg.Done()
-			r := GenResultForFile(fName, changes, config)
-			if r.HasDuplicates() {
-				resultChan <- r
-			}
-		}(fName, resultChan)
 	}
-	wg.Wait()
 
 	if len(results) > 0 {
 		fmt.Printf(colour.White("Possible copy/paste sources:\n"))
