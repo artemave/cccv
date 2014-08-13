@@ -18,17 +18,18 @@ Why? Because copy/pasted code is impossible to spot at code review time.
 For fine tuning, drop `.cccv.yml` into the root of your project. Example:
 ```
 exclude-lines:
-  - "fmt|if err != nil"
-  - WriteString
+  - "require\\(['\"].+['\"]\\);$" # will exclude `var x = require('y');`
+                                  # this regexp gets parsed by YAML first, hence extra escaping for \ and "
+  - console.log
 
 exclude-files:
-  - "README.*" # this is regexp, NOT a glob
+  - "README.*" # regexp, NOT a glob
 
-# mininum number of consecutive duplicate lines to consider relevant; default 2
-min-hunk-size: 3
+min-hunk-size: 3 # mininum number of consecutive duplicate
+                 # lines to consider relevant; default 2
 
-# minimum line length (bar leading/trailing tabs and spaces) to be considered relevant; default 10
-min-line-length: 15
+min-line-length: 15 # minimum line length (bar leading/trailing tabs and spaces)
+                    # to be considered relevant; default 10
 ```
 
 ## Limitations
