@@ -5,12 +5,19 @@ cccv finds what parts of a diff were copy/pasted from elsewhere in the project.
 
 Why? Because copy/pasted code is impossible to spot at code review time.
 
+## Installation
+
+You can get the binary:
+
+    % curl -A "`uname -sp`" https://gox-server.herokuapp.com/artemave/cccv > cccv
+    % chmod a+x ./cccv
+
+Or, if you have [Golang](http://golang.org/doc/install) installed:
+
+    % go get github.com/artemave/cccv
+
 ## Usage
-
-[Golang](http://golang.org/doc/install) is required to install this package.
-
 ```
-% go get github.com/artemave/cccv
 % git checkout pr1
 % git diff master | cccv
 ```
