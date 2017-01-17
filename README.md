@@ -7,10 +7,14 @@ Why? Because copy/pasted code is impossible to spot at code review time.
 
 ## Installation
 
-You can get the binary:
+Use Docker image:
 
-    % curl -A "`uname -sp`" https://gox-server.herokuapp.com/artemave/cccv > cccv
-    % chmod a+x ./cccv
+    % git diff | docker run --rm -i artemave/cccv
+
+Or, compile `cccv` binary (needs Docker):
+
+    % git clone https://github.com/artemave/cccv.git && cd cccv
+    % make
 
 Or, if you have [Golang](http://golang.org/doc/install) installed:
 
